@@ -7,6 +7,9 @@ package compilador;
 
 import automatas.Lexico;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Stack;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -54,9 +57,15 @@ public class GUICompilador extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         jTextOut = new javax.swing.JTextArea();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        jTextPila = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        jTextEntrada = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItemCompilar = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
 
@@ -76,7 +85,7 @@ public class GUICompilador extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -94,7 +103,7 @@ public class GUICompilador extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,7 +121,7 @@ public class GUICompilador extends javax.swing.JFrame {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 662, Short.MAX_VALUE)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -120,6 +129,33 @@ public class GUICompilador extends javax.swing.JFrame {
         );
 
         jTabbedPane1.addTab("Output", jPanel1);
+
+        jTextPila.setEditable(false);
+        jTextPila.setColumns(20);
+        jTextPila.setRows(5);
+        jScrollPane5.setViewportView(jTextPila);
+
+        jTextEntrada.setEditable(false);
+        jTextEntrada.setColumns(20);
+        jTextEntrada.setRows(5);
+        jScrollPane6.setViewportView(jTextEntrada);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 510, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+            .addComponent(jScrollPane6)
+        );
+
+        jTabbedPane1.addTab("Validar Cadenas", jPanel4);
 
         jMenu1.setText("Run");
 
@@ -130,6 +166,14 @@ public class GUICompilador extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItemCompilar);
+
+        jMenuItem1.setText("Validar");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
 
         jMenuBar1.add(jMenu1);
 
@@ -147,16 +191,15 @@ public class GUICompilador extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(32, 32, 32)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 667, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(278, 278, 278)
-                        .addComponent(jLabel1)))
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addGap(32, 32, 32)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jTabbedPane1)
+                    .addComponent(jScrollPane1))
+                .addContainerGap(34, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addGap(494, 494, 494))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -223,6 +266,82 @@ public class GUICompilador extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jMenuItemCompilarActionPerformed
 
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        String ent,sPila="",sEntrada=""; 
+             String [] aEnt;
+             HashMap<String,HashMap> NT = new HashMap<>();
+             Stack<String> pila = new Stack<>();
+             Stack<String> entrada = new Stack<>();
+             utils.llenarTablaSintactica(NT);
+             //ent=JOptionPane.showInputDialog("Introduzca cadena a evaluar");
+             ent=JTAPrompt.getText();
+             aEnt=ent.split(" ");
+             entrada.push("$");
+             pila.push("$");
+             pila.push("Prog");
+             int ii=aEnt.length-1;
+             for (int i = 0; i < aEnt.length; i++) 
+             {
+                 entrada.push(aEnt[ii]);
+                 ii--;
+             }
+             
+             sPila+=utils.mostrarPila(pila);
+             sEntrada+=utils.mostrarEntrada(entrada);
+             while(!entrada.empty())
+             {
+                 if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
+                 {
+                    
+                     JOptionPane.showMessageDialog(this,"Si jala!!!!");
+                    break;
+                 }else
+                 {
+                     if(pila.lastElement().equals(entrada.lastElement()))
+                     {
+                         entrada.pop();
+                         pila.pop();
+                         sPila+=utils.mostrarPila(pila);
+                         sEntrada+=utils.mostrarEntrada(entrada);
+                     }else
+                     {
+                        
+                         if(utils.buscar(NT,pila.lastElement(),entrada.lastElement()))
+                         {
+                             
+                             String cruce = utils.getCruce(NT,pila.lastElement(),entrada.lastElement());
+                             if(!cruce.equals("e"))
+                             {
+                                pila.pop();
+                                String [] aCruce =cruce.split(" ");
+                                int j=aCruce.length-1;
+                                for (int i = 0; i < aCruce.length; i++) {
+                                    pila.push(aCruce[j]);
+                                    j--;
+                                }
+                             sPila+=utils.mostrarPila(pila);
+                             sEntrada+=utils.mostrarEntrada(entrada);   
+                             }else
+                             {
+                                 pila.pop();
+                                 sPila+=utils.mostrarPila(pila);
+                                 sEntrada+=utils.mostrarEntrada(entrada);
+                             }
+                             
+                         }
+                         else
+                         {      
+                             JOptionPane.showMessageDialog(this,"Ya valio Madre Esto!!!!");
+                             break;
+                         }
+                     }
+                 }
+                 
+             }
+             jTextPila.setText(sPila);
+             jTextEntrada.setText(sEntrada);
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -265,18 +384,24 @@ public class GUICompilador extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItemCompilar;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable;
+    private javax.swing.JTextArea jTextEntrada;
     private javax.swing.JTextArea jTextErrores;
     private javax.swing.JTextArea jTextOut;
+    private javax.swing.JTextArea jTextPila;
     // End of variables declaration//GEN-END:variables
 }
