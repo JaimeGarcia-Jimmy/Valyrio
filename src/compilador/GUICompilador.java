@@ -18,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class GUICompilador extends javax.swing.JFrame {
     Utils utils =new Utils();
+    String cadEntrada="";
     //Lista_desordenada lista = new Lista_desordenada();
     DefaultTableModel tabla = new DefaultTableModel();
    // Lexico lexico;
@@ -219,10 +220,12 @@ public class GUICompilador extends javax.swing.JFrame {
 
     private void jMenuItemCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCompilarActionPerformed
         Lexico lexico = new Lexico();
+        cadEntrada="";
         String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resultErr="",clasificar;
-        int conE=0;
+        //int conE=0,conUltimo;
         ArrayList tokens;
         String[] cadenas =texto.split(delimitadores);
+        int conE=0,conUltimo=cadenas.length-1;
         for (int i = 0; i < cadenas.length; i++) 
         {
             tokens = new ArrayList();
@@ -233,6 +236,7 @@ public class GUICompilador extends javax.swing.JFrame {
            
             if(!clasificar.equals("COMEN"))
                    resulOut+=clasificar+" ";
+                   cadEntrada+=clasificar+" ";
         
                 if (clasificar.equals("ERROR")) 
                 {
@@ -255,12 +259,15 @@ public class GUICompilador extends javax.swing.JFrame {
             }
             
             resulOut+="\n";
+            if(conUltimo!=i)
+                cadEntrada+="Del ";
         }
         System.out.println(resultErr);
         lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
         lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
         jTextErrores.setText(resultErr);
         jTextOut.setText(resulOut);
+        System.out.println("entrada: "+cadEntrada);
         
         
         
@@ -274,7 +281,8 @@ public class GUICompilador extends javax.swing.JFrame {
              Stack<String> entrada = new Stack<>();
              utils.llenarTablaSintactica(NT);
              //ent=JOptionPane.showInputDialog("Introduzca cadena a evaluar");
-             ent=JTAPrompt.getText();
+             //ent=JTAPrompt.getText();
+             ent=cadEntrada;
              aEnt=ent.split(" ");
              entrada.push("$");
              pila.push("$");
