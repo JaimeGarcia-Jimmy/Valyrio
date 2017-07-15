@@ -216,7 +216,7 @@ public class Utils {
             T7.put(",","IDR");
             T7.put("Opa","Opa Expresion IDR");
             T8.put("Del","e");
-            T8.put(",","IDR");
+            T8.put(",",", id IDRprima");
             T9.put("Del","e");
             T9.put(",","IDR");
             T9.put("Opa","Opa Expresion IDR");
@@ -260,7 +260,7 @@ public class Utils {
             T19.put("oprel","e");
             T19.put("opari","ExpresionR");
             T20.put("Del","e");
-            T20.put("opari","Opari Expresion ExpresionR");
+            T20.put("opari","opari Expresion ExpresionR");
             /*
             T.put("Ice","");
             T.put("Fire","");

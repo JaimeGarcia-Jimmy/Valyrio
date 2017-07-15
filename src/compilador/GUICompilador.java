@@ -284,10 +284,13 @@ public class GUICompilador extends javax.swing.JFrame {
              {
                  entrada.push(aEnt[ii]);
                  ii--;
+                 
              }
              
              sPila+=utils.mostrarPila(pila);
              sEntrada+=utils.mostrarEntrada(entrada);
+             System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
              while(!entrada.empty())
              {
                  if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
@@ -303,6 +306,9 @@ public class GUICompilador extends javax.swing.JFrame {
                          pila.pop();
                          sPila+=utils.mostrarPila(pila);
                          sEntrada+=utils.mostrarEntrada(entrada);
+                         System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
+                         
                      }else
                      {
                         
@@ -320,12 +326,16 @@ public class GUICompilador extends javax.swing.JFrame {
                                     j--;
                                 }
                              sPila+=utils.mostrarPila(pila);
-                             sEntrada+=utils.mostrarEntrada(entrada);   
+                             sEntrada+=utils.mostrarEntrada(entrada);
+                             System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
                              }else
                              {
                                  pila.pop();
                                  sPila+=utils.mostrarPila(pila);
                                  sEntrada+=utils.mostrarEntrada(entrada);
+                                System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
                              }
                              
                          }
