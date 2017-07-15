@@ -7,6 +7,7 @@ package automatas;
 
 import ListaDinamica.Lista_desordenada;
 import ListaDinamica.TDAToken;
+import compilador.Utils;
 import java.util.ArrayList;
 
 /**
@@ -38,6 +39,15 @@ public class Lexico {
         palabrasReservadas.add("HalfGroat");
         palabrasReservadas.add("Moon");
         palabrasReservadas.add("Stag");
+        palabrasReservadas.add("for");
+        palabrasReservadas.add(";");
+        palabrasReservadas.add("endfor");
+        palabrasReservadas.add("if");
+        palabrasReservadas.add("then");
+        palabrasReservadas.add("endif");
+        palabrasReservadas.add("else");
+        palabrasReservadas.add("endelse");
+        palabrasReservadas.add(",");
         
         //ingresar los operadores relacionales
         operadoresRelacionales.add(">");
@@ -68,7 +78,7 @@ public class Lexico {
             registro.categoria = 5;
             tablaSimbolos.Insertar(registro);
             System.out.println("Es el operador de asignacion");
-            return "OPA";
+            return "Opa";
         }
         
         //Comparar si el token esta en la tabla de palabras reservadas
@@ -80,7 +90,8 @@ public class Lexico {
             registro.categoria = 1;
             tablaSimbolos.Insertar(registro);
             System.out.println("Es una palabra reservada");
-            return "PR"+cont;
+            //return "PR"+cont;
+            return token;
         }
         
         //Comparar si el token esta en la tabla de operadores aritmeticos
@@ -90,7 +101,7 @@ public class Lexico {
             registro.categoria = 3;
             tablaSimbolos.Insertar(registro);
             System.out.println("Es un operador aritmetico");
-            return "OPAR";
+            return "opari";
         }
         
         //Comparar si el token esta en la tabla de operadores relacionales
@@ -100,7 +111,7 @@ public class Lexico {
             registro.categoria = 4;
             tablaSimbolos.Insertar(registro);
             System.out.println("Es un operador relacional");
-            return "OPR";
+            return "oprel";
         }
         
         //Ingresar el token al automata de numeros
@@ -108,7 +119,7 @@ public class Lexico {
         if (!resultadoNumero.equals("nan")) {
             //actualmente no se ingresan los numeros a la tabla de simbolos
             System.out.println("Es un numero "+resultadoNumero);
-            return "NUM";
+            return "num";
         }
         
         //Ingresar el token al automata de identificadores
@@ -118,14 +129,14 @@ public class Lexico {
             registro.categoria = 2;
             tablaSimbolos.Insertar(registro);
             System.out.println("Es un identificador");
-            return "IDEN";
+            return "id";
         }
         
         //ingresar el token en el automata de cadenas
         if (automataCadenas(token)) {
             //actualmente no se ingresan las cadenas a la tabla de simbolos
             System.out.println("Es una cadena");
-            return "CAD";
+            return "cad";
         }
         
         //ingresar el token en el automata de comentarios
@@ -159,7 +170,7 @@ public class Lexico {
             switch (estadoActual) {
                 
                 case "inicio":
-                    if (Character.isDigit(simbolo)) {
+                    if (Utils.esDigito(simbolo)) {
                         estadoActual = "entero";
                     } else if (simbolo == '+' || simbolo == '-') {
                         estadoActual = "q1";
@@ -169,7 +180,7 @@ public class Lexico {
                     break;
                     
                 case "q1":
-                    if (Character.isDigit(simbolo)) {
+                    if (Utils.esDigito(simbolo)) {
                         estadoActual = "entero";
                     } else if (simbolo == '.') {
                         estadoActual = "q2";
@@ -179,7 +190,7 @@ public class Lexico {
                     break;
                 
                 case "q2":
-                    if (Character.isDigit(simbolo)) {
+                    if (Utils.esDigito(simbolo)) {
                         estadoActual = "real";
                     } else {
                         cadenaRechazada = true;
@@ -187,7 +198,7 @@ public class Lexico {
                     break;
                     
                 case "entero":
-                    if (Character.isDigit(simbolo)) {
+                    if (Utils.esDigito(simbolo)) {
                         estadoActual = "entero";
                     } else if (simbolo == '.') {
                         estadoActual = "q2";
@@ -197,7 +208,7 @@ public class Lexico {
                     break;
                     
                 case "real":
-                    if (Character.isDigit(simbolo)) {
+                    if (Utils.esDigito(simbolo)) {
                         estadoActual = "real";
                     } else {
                         cadenaRechazada = true;
@@ -234,7 +245,7 @@ public class Lexico {
             switch (estadoActual) {
                 
                 case "inicio":
-                    if (Character.isAlphabetic(simbolo)) {
+                    if (Utils.esLetra(simbolo)) {
                         estadoActual = "q1";
                     } else {
                         cadenaRechazada = true;
@@ -242,7 +253,7 @@ public class Lexico {
                     break;
                     
                 case "q1":
-                    if (Character.isDigit(simbolo) || Character.isAlphabetic(simbolo) || simbolo == '_') {
+                    if (Utils.esDigito(simbolo) || Utils.esLetra(simbolo) || simbolo == '_') {
                         estadoActual = "q1";
                     } else {
                         cadenaRechazada = true;
