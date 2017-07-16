@@ -160,7 +160,7 @@ public class GUICompilador extends javax.swing.JFrame {
 
         jMenu1.setText("Run");
 
-        jMenuItemCompilar.setText("A lexico");
+        jMenuItemCompilar.setText("Compilar");
         jMenuItemCompilar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItemCompilarActionPerformed(evt);
@@ -248,10 +248,10 @@ public class GUICompilador extends javax.swing.JFrame {
                 String Err;
                 if(conE==1)
                 {
-                    Err=conE+" error en linea " +(i+1);
+                    Err=conE+" error lexico en linea " +(i+1);
                 }else
                 {
-                    Err=conE+" errores en linea " +(i+1);
+                    Err=conE+" errores lexicos en linea " +(i+1);
                 }
                 
                 resultErr+=Err+"\n";
@@ -265,11 +265,14 @@ public class GUICompilador extends javax.swing.JFrame {
         System.out.println(resultErr);
         lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
         lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
+        
+        System.out.println("entrada: "+cadEntrada);
         jTextErrores.setText(resultErr);
         jTextOut.setText(resulOut);
-        System.out.println("entrada: "+cadEntrada);
-        this.validacionSintactica();
-        
+      
+        if(lexico.erroresLexico.size()==0)
+            this.validacionSintactica();
+            
         
     }//GEN-LAST:event_jMenuItemCompilarActionPerformed
 
@@ -314,9 +317,10 @@ public class GUICompilador extends javax.swing.JFrame {
         
     }
     public  void validacionSintactica()
-    {
-        String ent,sPila="",sEntrada=""; 
+    {           
+             String ent,sPila="",sEntrada=""; 
              String [] aEnt;
+             int conDel=1;
              HashMap<String,HashMap> NT = new HashMap<>();
              Stack<String> pila = new Stack<>();
              Stack<String> entrada = new Stack<>();
@@ -351,12 +355,14 @@ public class GUICompilador extends javax.swing.JFrame {
                  {
                      if(pila.lastElement().equals(entrada.lastElement()))
                      {
+                         if(entrada.lastElement().equals("Del"))
+                             conDel++;
                          entrada.pop();
                          pila.pop();
                          sPila+=utils.mostrarPila(pila);
                          sEntrada+=utils.mostrarEntrada(entrada);
                          System.out.println(sPila+"");
-             System.out.println(sEntrada+"");
+                         System.out.println(sEntrada+"");
                          
                      }else
                      {
@@ -391,6 +397,9 @@ public class GUICompilador extends javax.swing.JFrame {
                          else
                          {      
                              JOptionPane.showMessageDialog(this,"Error al compilar");
+                             String stErr="Error sintactico linea "+conDel;
+                             jTextErrores.setText(stErr);
+                            
                              break;
                          }
                      }
@@ -401,7 +410,114 @@ public class GUICompilador extends javax.swing.JFrame {
              jTextEntrada.setText(sEntrada);
     }
     
-    
+    /************************************************************/
+    public  void validacionSintacticav2()
+    {           
+             String ent,sPila="",sEntrada="",stErr=""; 
+             String [] aEnt;
+             int conDel=1;
+             Boolean banError=false;
+             HashMap<String,HashMap> NT = new HashMap<>();
+             Stack<String> pila = new Stack<>();
+             Stack<String> entrada = new Stack<>();
+             utils.llenarTablaSintactica(NT);
+             //ent=JOptionPane.showInputDialog("Introduzca cadena a evaluar");
+             //ent=JTAPrompt.getText();
+             ent=cadEntrada;
+             aEnt=ent.split(" ");
+             entrada.push("$");
+             pila.push("$");
+             pila.push("Prog");
+             int ii=aEnt.length-1;
+             for (int i = 0; i < aEnt.length; i++) 
+             {
+                 entrada.push(aEnt[ii]);
+                 ii--;
+                 
+             }
+             
+             sPila+=utils.mostrarPila(pila);
+             sEntrada+=utils.mostrarEntrada(entrada);
+             System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
+             while(!entrada.empty())
+             {
+                 if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
+                 {
+                    
+                     //JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
+                    break;
+                 }else
+                 {
+                     if(pila.lastElement().equals(entrada.lastElement()))
+                     {
+                         if(entrada.lastElement().equals("Del"))
+                             conDel++;
+                         entrada.pop();
+                         pila.pop();
+                         sPila+=utils.mostrarPila(pila);
+                         sEntrada+=utils.mostrarEntrada(entrada);
+                         System.out.println(sPila+"");
+                         System.out.println(sEntrada+"");
+                         
+                     }else
+                     {
+                        
+                         if(utils.buscar(NT,pila.lastElement(),entrada.lastElement()))
+                         {
+                             
+                             String cruce = utils.getCruce(NT,pila.lastElement(),entrada.lastElement());
+                             if(!cruce.equals("e"))
+                             {
+                                pila.pop();
+                                String [] aCruce =cruce.split(" ");
+                                int j=aCruce.length-1;
+                                for (int i = 0; i < aCruce.length; i++) {
+                                    pila.push(aCruce[j]);
+                                    j--;
+                                }
+                             sPila+=utils.mostrarPila(pila);
+                             sEntrada+=utils.mostrarEntrada(entrada);
+                             System.out.println(sPila+"");
+             System.out.println(sEntrada+"");
+                             }else
+                             {
+                                 pila.pop();
+                                 sPila+=utils.mostrarPila(pila);
+                                 sEntrada+=utils.mostrarEntrada(entrada);
+                                System.out.println(sPila+"");
+                                System.out.println(sEntrada+"");
+                             }
+                             
+                         }
+                         else
+                         {   banError=true; 
+                             if(entrada.lastElement().equals("Del"))
+                                conDel++;
+                             
+                             entrada.pop();
+                             sPila+=utils.mostrarPila(pila);
+                             sEntrada+=utils.mostrarEntrada(entrada);
+                             System.out.println(sPila+"");
+                             System.out.println(sEntrada+"");
+                             stErr+="Error sintactico linea "+conDel+"\n";
+                             
+                            
+                           
+                         }
+                     }
+                 }
+                 
+             }
+             if(!banError)
+                 JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
+             else
+                 JOptionPane.showMessageDialog(this,"Problemas al compilar");
+             
+             jTextErrores.setText(stErr);
+             jTextPila.setText(sPila);
+             jTextEntrada.setText(sEntrada);
+    }
     
     
 

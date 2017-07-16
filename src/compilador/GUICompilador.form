@@ -11,7 +11,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItemCompilar">
               <Properties>
-                <Property name="text" type="java.lang.String" value="A lexico"/>
+                <Property name="text" type="java.lang.String" value="Compilar"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItemCompilarActionPerformed"/>

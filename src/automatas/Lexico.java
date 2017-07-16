@@ -77,7 +77,7 @@ public class Lexico {
             registro.llave = token;
             registro.categoria = 5;
             tablaSimbolos.Insertar(registro);
-            System.out.println("Es el operador de asignacion");
+            //System.out.println("Es el operador de asignacion");
             return "Opa";
         }
         
@@ -89,7 +89,7 @@ public class Lexico {
             registro.llave = token;
             registro.categoria = 1;
             tablaSimbolos.Insertar(registro);
-            System.out.println("Es una palabra reservada");
+            //System.out.println("Es una palabra reservada");
             //return "PR"+cont;
             return token;
         }
@@ -100,7 +100,7 @@ public class Lexico {
             registro.llave = token;
             registro.categoria = 3;
             tablaSimbolos.Insertar(registro);
-            System.out.println("Es un operador aritmetico");
+            //System.out.println("Es un operador aritmetico");
             return "opari";
         }
         
@@ -110,7 +110,7 @@ public class Lexico {
             registro.llave = token;
             registro.categoria = 4;
             tablaSimbolos.Insertar(registro);
-            System.out.println("Es un operador relacional");
+            //System.out.println("Es un operador relacional");
             return "oprel";
         }
         
@@ -118,7 +118,7 @@ public class Lexico {
         String resultadoNumero = automataNumeros(token);
         if (!resultadoNumero.equals("nan")) {
             //actualmente no se ingresan los numeros a la tabla de simbolos
-            System.out.println("Es un numero "+resultadoNumero);
+            //System.out.println("Es un numero "+resultadoNumero);
             return "num";
         }
         
@@ -128,26 +128,26 @@ public class Lexico {
             registro.llave = token;
             registro.categoria = 2;
             tablaSimbolos.Insertar(registro);
-            System.out.println("Es un identificador");
+           // System.out.println("Es un identificador");
             return "id";
         }
         
         //ingresar el token en el automata de cadenas
         if (automataCadenas(token)) {
             //actualmente no se ingresan las cadenas a la tabla de simbolos
-            System.out.println("Es una cadena");
+            //System.out.println("Es una cadena");
             return "cad";
         }
         
         //ingresar el token en el automata de comentarios
         if (automataComentarios(token)) {
             //actualmente no se ingresan las cadenas a la tabla de simbolos
-            System.out.println("Es un comentario");
+            //System.out.println("Es un comentario");
             return "COMEN";
         }
         
         //Si llego hasta este punto significa que el toekn no cayo en ninguna de las clasificaciones y hay que ingresarlo a los errores
-        System.out.println("Es un error lexico");
+       // System.out.println("Es un error lexico");
         erroresLexico.add(token);
         return "ERROR";
         
