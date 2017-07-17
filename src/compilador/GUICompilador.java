@@ -317,97 +317,121 @@ public class GUICompilador extends javax.swing.JFrame {
         
     }
     public  void validacionSintactica()
-    {           
-             String ent,sPila="",sEntrada=""; 
-             String [] aEnt;
-             int conDel=1;
-             HashMap<String,HashMap> NT = new HashMap<>();
-             Stack<String> pila = new Stack<>();
-             Stack<String> entrada = new Stack<>();
-             utils.llenarTablaSintactica(NT);
-             //ent=JOptionPane.showInputDialog("Introduzca cadena a evaluar");
-             //ent=JTAPrompt.getText();
-             ent=cadEntrada;
-             aEnt=ent.split(" ");
-             entrada.push("$");
-             pila.push("$");
-             pila.push("Prog");
-             int ii=aEnt.length-1;
-             for (int i = 0; i < aEnt.length; i++) 
+    {
+         //Variables para mostrar la pila y entrada en la consola
+         String ent,sPila="",sEntrada=""; 
+         //arreglo para las palabras de la cadena de entrada
+         String [] aEnt;
+         //contador de saltos de linea
+         int conDel=1;
+         //tabla de analisis sintactico
+         HashMap<String,HashMap> NT = new HashMap<>();
+         Stack<String> pila = new Stack<>();
+         Stack<String> entrada = new Stack<>();
+         utils.llenarTablaSintactica(NT);
+         //ent=JOptionPane.showInputDialog("Introduzca cadena a evaluar");
+         //ent=JTAPrompt.getText();
+         //cadena de entrada producida en el analisis lexico
+         ent=cadEntrada;
+         aEnt=ent.split(" ");
+         //incializar la pila y cadena de entrada con el simbolo $ y el simbolo de la produccion inicial
+         entrada.push("$");
+         pila.push("$");
+         pila.push("Prog");
+         int ii=aEnt.length-1;
+         //ingresar los simbolos a la pila de entrada en forma invertida
+         for (int i = 0; i < aEnt.length; i++) 
+         {
+             entrada.push(aEnt[ii]);
+             ii--;
+
+         }
+
+         //mostrar el contenido de la pila y la entrada en consola
+         sPila+=utils.mostrarPila(pila);
+         sEntrada+=utils.mostrarEntrada(entrada);
+         System.out.println(sPila+"");
+         System.out.println(sEntrada+"");
+         
+         while(!entrada.empty())
+         {
+             if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
              {
-                 entrada.push(aEnt[ii]);
-                 ii--;
-                 
-             }
-             
-             sPila+=utils.mostrarPila(pila);
-             sEntrada+=utils.mostrarEntrada(entrada);
-             System.out.println(sPila+"");
-             System.out.println(sEntrada+"");
-             while(!entrada.empty())
+                 //Si los ultimos elementos en la pila y la entrada son el simbolo $
+                 JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
+                break;
+             }else
              {
-                 if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
+                 //si los elementos en la pila y la entrada coinciden, se eliminan de ambas
+                 if(pila.lastElement().equals(entrada.lastElement()))
                  {
-                    
-                     JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
-                    break;
+                     //contador para saltos de linea
+                     if(entrada.lastElement().equals("Del"))
+                         conDel++;
+                     entrada.pop();
+                     pila.pop();
+                     //mostrar contenido de pila y entrada a consola
+                     sPila+=utils.mostrarPila(pila);
+                     sEntrada+=utils.mostrarEntrada(entrada);
+                     System.out.println(sPila+"");
+                     System.out.println(sEntrada+"");
+
                  }else
                  {
-                     if(pila.lastElement().equals(entrada.lastElement()))
+
+                     //si existe un cruce en la tabla para el no terminal de la pila y el terminal de la entrada
+                     if(utils.buscar(NT,pila.lastElement(),entrada.lastElement()))
                      {
-                         if(entrada.lastElement().equals("Del"))
-                             conDel++;
-                         entrada.pop();
-                         pila.pop();
-                         sPila+=utils.mostrarPila(pila);
-                         sEntrada+=utils.mostrarEntrada(entrada);
-                         System.out.println(sPila+"");
-                         System.out.println(sEntrada+"");
-                         
-                     }else
-                     {
-                        
-                         if(utils.buscar(NT,pila.lastElement(),entrada.lastElement()))
+
+                         //se recupera la produccion de la tabla sintactica
+                         String cruce = utils.getCruce(NT,pila.lastElement(),entrada.lastElement());
+                         //si la produccion no es el simbolo vacio e
+                         if(!cruce.equals("e"))
                          {
-                             
-                             String cruce = utils.getCruce(NT,pila.lastElement(),entrada.lastElement());
-                             if(!cruce.equals("e"))
-                             {
-                                pila.pop();
-                                String [] aCruce =cruce.split(" ");
-                                int j=aCruce.length-1;
-                                for (int i = 0; i < aCruce.length; i++) {
-                                    pila.push(aCruce[j]);
-                                    j--;
-                                }
-                             sPila+=utils.mostrarPila(pila);
-                             sEntrada+=utils.mostrarEntrada(entrada);
-                             System.out.println(sPila+"");
-             System.out.println(sEntrada+"");
-                             }else
-                             {
-                                 pila.pop();
-                                 sPila+=utils.mostrarPila(pila);
-                                 sEntrada+=utils.mostrarEntrada(entrada);
-                                System.out.println(sPila+"");
-             System.out.println(sEntrada+"");
-                             }
-                             
+                            //se elimina el simbolo de mas arriba de la pila
+                            pila.pop();
+                            //se separa la produccion en espacios
+                            String [] aCruce =cruce.split(" ");
+                            int j=aCruce.length-1;
+                            //se ingresa a la pila de forma inversa
+                            for (int i = 0; i < aCruce.length; i++) {
+                                pila.push(aCruce[j]);
+                                j--;
+                            }
+                            //mostrar contenidos en consola
+                            sPila+=utils.mostrarPila(pila);
+                            sEntrada+=utils.mostrarEntrada(entrada);
+                            System.out.println(sPila+"");
+                            System.out.println(sEntrada+"");
+                         }else
+                         {
+                            //si la produccion es el simbolo vacio e
+                            //se elimina el simbolo mas arriba en la pila
+                            pila.pop();
+                            //mostrar contenidos en consola
+                            sPila+=utils.mostrarPila(pila);
+                            sEntrada+=utils.mostrarEntrada(entrada);
+                            System.out.println(sPila+"");
+                            System.out.println(sEntrada+"");
                          }
-                         else
-                         {      
-                             JOptionPane.showMessageDialog(this,"Error al compilar");
-                             String stErr="Error sintactico linea "+conDel;
-                             jTextErrores.setText(stErr);
-                            
-                             break;
-                         }
+
+                     }
+                     else
+                     {   
+                         //si no existe un cruce entre el simbolo no terminal de la pila y el terminal de la entrada
+                         JOptionPane.showMessageDialog(this,"Error al compilar");
+                         String stErr="Error sintactico linea "+conDel;
+                         jTextErrores.setText(stErr);
+
+                         break;
                      }
                  }
-                 
              }
-             jTextPila.setText(sPila);
-             jTextEntrada.setText(sEntrada);
+
+         }
+         //mostrar todos los movimientos de la pila y la entrada en la interfaz de usuario 
+         jTextPila.setText(sPila);
+         jTextEntrada.setText(sEntrada);
     }
     
     /************************************************************/
