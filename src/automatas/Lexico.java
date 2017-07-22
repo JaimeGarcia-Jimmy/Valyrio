@@ -435,5 +435,93 @@ public class Lexico {
         
     }
     
+    //metodo alterno que regresa tipos de numeros y automat char(pendiente) 
+    public String clasificar2(String token) {
+       
+        //Comparar si el token es igual al operador de asignacion
+        if (operadorAsignacion.equals(token)) {
+            //actualmente el operador de asignacion no se ingresa en la tabla de simbolos
+            TDAToken registro = new TDAToken();
+            registro.llave = token;
+            registro.categoria = 5;
+            tablaSimbolos.Insertar(registro);
+            //System.out.println("Es el operador de asignacion");
+            return "Opa";
+        }
+        
+        //Comparar si el token esta en la tabla de palabras reservadas
+        if (palabrasReservadas.contains(token)) {
+            
+            cont++;
+            TDAToken registro = new TDAToken();
+            registro.llave = token;
+            registro.categoria = 1;
+            tablaSimbolos.Insertar(registro);
+            //System.out.println("Es una palabra reservada");
+            //return "PR"+cont;
+            return token;
+        }
+        
+        //Comparar si el token esta en la tabla de operadores aritmeticos
+        if (operadoresAritmeticos.contains(token)) {
+            TDAToken registro = new TDAToken();
+            registro.llave = token;
+            registro.categoria = 3;
+            tablaSimbolos.Insertar(registro);
+            //System.out.println("Es un operador aritmetico");
+            return "opari";
+        }
+        
+        //Comparar si el token esta en la tabla de operadores relacionales
+        if (operadoresRelacionales.contains(token)) {
+            TDAToken registro = new TDAToken();
+            registro.llave = token;
+            registro.categoria = 4;
+            tablaSimbolos.Insertar(registro);
+            //System.out.println("Es un operador relacional");
+            return "oprel";
+        }
+        
+        //Ingresar el token al automata de numeros
+        String resultadoNumero = automataNumeros(token);
+        if (!resultadoNumero.equals("nan")) {
+            //actualmente no se ingresan los numeros a la tabla de simbolos
+            //System.out.println("Es un numero "+resultadoNumero);
+            return resultadoNumero;
+        }
+        
+        //Ingresar el token al automata de identificadores
+        if (automataIdentificadores(token)) {
+            TDAToken registro = new TDAToken();
+            registro.llave = token;
+            registro.categoria = 2;
+            tablaSimbolos.Insertar(registro);
+           // System.out.println("Es un identificador");
+            return "id";
+        }
+        
+        //ingresar el token en el automata de cadenas
+        if (automataCadenas(token)) {
+            //actualmente no se ingresan las cadenas a la tabla de simbolos
+            //System.out.println("Es una cadena");
+            return "cad";
+        }
+        
+        //ingresar el token en el automata de comentarios
+        if (automataComentarios(token)) {
+            //actualmente no se ingresan las cadenas a la tabla de simbolos
+            //System.out.println("Es un comentario");
+            return "COMEN";
+        }
+        
+        //Si llego hasta este punto significa que el toekn no cayo en ninguna de las clasificaciones y hay que ingresarlo a los errores
+       // System.out.println("Es un error lexico");
+        erroresLexico.add(token);
+        return "ERROR";
+        
+    }
+    
+    
+    
     
 }

@@ -5,6 +5,7 @@
  */
 package compilador;
 
+import ListaDinamica.TDAToken;
 import automatas.Lexico;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,6 +64,9 @@ public class GUICompilador extends javax.swing.JFrame {
         jTextPila = new javax.swing.JTextArea();
         jScrollPane6 = new javax.swing.JScrollPane();
         jTextEntrada = new javax.swing.JTextArea();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        jTextoutS = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItemCompilar = new javax.swing.JMenuItem();
@@ -158,6 +162,24 @@ public class GUICompilador extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Validar Cadenas", jPanel4);
 
+        jTextoutS.setEditable(false);
+        jTextoutS.setColumns(20);
+        jTextoutS.setRows(5);
+        jScrollPane7.setViewportView(jTextoutS);
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 1024, Short.MAX_VALUE)
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane7, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
+        );
+
+        jTabbedPane1.addTab("OutputS", jPanel5);
+
         jMenu1.setText("Run");
 
         jMenuItemCompilar.setText("Compilar");
@@ -221,28 +243,35 @@ public class GUICompilador extends javax.swing.JFrame {
     private void jMenuItemCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCompilarActionPerformed
         Lexico lexico = new Lexico();
         cadEntrada="";
-        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resultErr="",clasificar;
+        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resulSeman="",resultErr="",clasificar;
         //int conE=0,conUltimo;
-        ArrayList tokens;
-        String[] cadenas =texto.split(delimitadores);
+        ArrayList tokens,declaraciones = new ArrayList();
+        String[] cadenasS,cadenas =texto.split(delimitadores);
         int conE=0,conUltimo=cadenas.length-1;
+        
         for (int i = 0; i < cadenas.length; i++) 
         {
             tokens = new ArrayList();
+            if(cadenas[i].contains("Dragon")||cadenas[i].contains("Moon")||cadenas[i].contains("Groat")||cadenas[i].contains("HalfGroat")||cadenas[i].contains("Stag"))   
+                declaraciones.add(cadenas[i]);
+                
             utils.separaTokens(cadenas[i], tokens);
             for (int j = 0; j < tokens.size(); j++) 
             {
             clasificar = lexico.clasificar((String) tokens.get(j));
            
-            if(!clasificar.equals("COMEN"))
-                   resulOut+=clasificar+" ";
-                   cadEntrada+=clasificar+" ";
-        
+                if(!clasificar.equals("COMEN"))
+                {
+                    resulOut+=clasificar+" ";
+                    cadEntrada+=clasificar+" ";
+                }
                 if (clasificar.equals("ERROR")) 
                 {
                     conE++;
                 }
             }
+            
+            
             if (conE>0) 
             {
                 String Err;
@@ -262,18 +291,43 @@ public class GUICompilador extends javax.swing.JFrame {
             if(conUltimo!=i)
                 cadEntrada+="Del ";
         }
-        System.out.println(resultErr);
+        //*for para asiganr el tipo a los id
+        for (Object declaracione : declaraciones) {
+            lexico.examinarDeclaracion((String) declaracione);
+        }
+        // for para la creacion de salida semantica
+        for (int i = 0; i < cadenas.length; i++) {
+            tokens = new ArrayList();                
+            utils.separaTokens(cadenas[i], tokens);
+            for (int j = 0; j < tokens.size(); j++) 
+            {
+            clasificar = lexico.clasificar2((String) tokens.get(j));
+           
+                if(!clasificar.equals("COMEN"))
+                {
+                    if(!clasificar.equals("id"))
+                        resulSeman+=clasificar+" ";
+                    else
+                    {
+                        TDAToken tokenIden = new TDAToken();
+                        tokenIden.llave = (String) tokens.get(j);
+                        resulSeman+=lexico.tablaSimbolos.buscar(tokenIden).info.tipo+" ";
+                    }
+                    
+                }
+            }
+            resulSeman+="\n";
+        }
+        
         lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
         lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
-        
-        System.out.println("entrada: "+cadEntrada);
+         
         jTextErrores.setText(resultErr);
         jTextOut.setText(resulOut);
-      
-        if(lexico.erroresLexico.size()==0)
-            this.validacionSintactica();
-            
         
+        
+        this.validacionSintactica();    
+        jTextoutS.setText(resulSeman);
     }//GEN-LAST:event_jMenuItemCompilarActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -344,9 +398,7 @@ public class GUICompilador extends javax.swing.JFrame {
          {
              entrada.push(aEnt[ii]);
              ii--;
-
          }
-
          //mostrar el contenido de la pila y la entrada en consola
          sPila+=utils.mostrarPila(pila);
          sEntrada+=utils.mostrarEntrada(entrada);
@@ -420,7 +472,8 @@ public class GUICompilador extends javax.swing.JFrame {
                      {   
                          //si no existe un cruce entre el simbolo no terminal de la pila y el terminal de la entrada
                          JOptionPane.showMessageDialog(this,"Error al compilar");
-                         String stErr="Error sintactico linea "+conDel;
+                         String stErr=jTextErrores.getText();
+                         stErr+="\nError sintactico linea "+conDel;
                          jTextErrores.setText(stErr);
 
                          break;
@@ -558,17 +611,20 @@ public class GUICompilador extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable;
     private javax.swing.JTextArea jTextEntrada;
     private javax.swing.JTextArea jTextErrores;
     private javax.swing.JTextArea jTextOut;
     private javax.swing.JTextArea jTextPila;
+    private javax.swing.JTextArea jTextoutS;
     // End of variables declaration//GEN-END:variables
 }
