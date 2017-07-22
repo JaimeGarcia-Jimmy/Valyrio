@@ -4,8 +4,8 @@ package ListaDinamica;
 
 
 public class Nodo {
-    TDAToken info;
-    Nodo siguiente;
+    public TDAToken info;
+    public Nodo siguiente;
     
     public Nodo(TDAToken I){
         info=I;

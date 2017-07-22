@@ -6,6 +6,7 @@
 package automatas;
 
 import ListaDinamica.Lista_desordenada;
+import ListaDinamica.Nodo;
 import ListaDinamica.TDAToken;
 import compilador.Utils;
 import java.util.ArrayList;
@@ -395,6 +396,43 @@ public class Lexico {
         else
             return false;
 
+    }
+    
+    /*
+     * Recibe una linea de declaracion del codigo fuente y asigna el tipo a los
+     * identificadores en la tabla de simbolos
+     */
+    public void examinarDeclaracion(String declaracion) {
+        System.out.println("*************************************");
+        System.out.println("Examinar Declaracion");
+        System.out.println("*************************************");
+        //TDAtoken para la busqueda
+        TDAToken tokenIden = new TDAToken();
+        //Nodo para guardar la posicion del identificador buscado en la tabla de simbolos
+        Nodo nodoIdentificador;
+        
+        //dividir la declaracion en palabras
+        String[] arrDeclaracion = declaracion.split(" ");
+        //el primer elemento siempre es el tipo
+        String tipo = arrDeclaracion[0];
+        //recorrer las palabras de la declaracion y procesar solo los identificadores
+        //empieza en el elemento 1 porque el 0 fue el tipo
+        for (int i=1 ; i<arrDeclaracion.length ; i++) {
+            
+            //revisar que la palabra no sea reservada y revisar si la palabra es identificador con el automata
+            if (!palabrasReservadas.contains(arrDeclaracion[i]) && automataIdentificadores(arrDeclaracion[i])) {
+                //modificar el campo llave de tokenIden para la busqueda
+                tokenIden.llave = arrDeclaracion[i];
+                //buscar el identificador en la tabla de simbolos y asignarle su tipo
+                nodoIdentificador = tablaSimbolos.buscar(tokenIden);
+                nodoIdentificador.info.tipo = tipo;
+                System.out.println("Palabra "+i+": "+ arrDeclaracion[i] +" es identificador de tipo "+tipo);
+            }
+            else {
+                System.out.println("Palabra "+i+": "+ arrDeclaracion[i] +" no es identificador");
+            }
+        }
+        
     }
     
     
