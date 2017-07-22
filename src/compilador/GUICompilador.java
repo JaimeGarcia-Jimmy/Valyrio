@@ -243,7 +243,7 @@ public class GUICompilador extends javax.swing.JFrame {
     private void jMenuItemCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCompilarActionPerformed
         Lexico lexico = new Lexico();
         cadEntrada="";
-        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resulSeman="",resultErr="",clasificar;
+        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resulSeman="",resulOutS="",resultErr="",clasificar;
         //int conE=0,conUltimo;
         ArrayList tokens,declaraciones = new ArrayList();
         String[] cadenasS,cadenas =texto.split(delimitadores);
@@ -318,6 +318,17 @@ public class GUICompilador extends javax.swing.JFrame {
             }
             resulSeman+="\n";
         }
+        // for para marcar lineas necesarias para revision semantica
+        cadenasS =resulSeman.split(delimitadores);
+        for (int i = 0; i < cadenasS.length; i++) 
+        {
+            if (cadenasS[i].contains("Opa")||cadenasS[i].contains("opari")||cadenasS[i].contains("oprel")) 
+                resulOutS+="@ "+cadenasS[i];
+            else
+                resulOutS+=cadenasS[i];
+        resulOutS+="\n";
+        }
+        
         
         lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
         lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
@@ -325,9 +336,8 @@ public class GUICompilador extends javax.swing.JFrame {
         jTextErrores.setText(resultErr);
         jTextOut.setText(resulOut);
         
-        
         this.validacionSintactica();    
-        jTextoutS.setText(resulSeman);
+        jTextoutS.setText(resulOutS);
     }//GEN-LAST:event_jMenuItemCompilarActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
