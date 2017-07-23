@@ -241,11 +241,11 @@ public class GUICompilador extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItemCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemCompilarActionPerformed
-        Lexico lexico = new Lexico();
+         Lexico lexico = new Lexico();
         cadEntrada="";
-        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resulSeman="",resulOutS="",resultErr="",clasificar;
+        String texto = JTAPrompt.getText(),delimitadores= "[\n]",resulOut="",resulSeman="",resulOutS="",resultErr="",clasificar,errSeman="",errfin="";
         //int conE=0,conUltimo;
-        ArrayList tokens,declaraciones = new ArrayList();
+        ArrayList tokens,declaraciones = new ArrayList(),identificadores = new ArrayList();
         String[] cadenasS,cadenas =texto.split(delimitadores);
         int conE=0,conUltimo=cadenas.length-1;
         
@@ -277,10 +277,10 @@ public class GUICompilador extends javax.swing.JFrame {
                 String Err;
                 if(conE==1)
                 {
-                    Err=conE+" error lexico en linea " +(i+1);
+                    Err=conE+" Error Lexico linea " +(i+1);
                 }else
                 {
-                    Err=conE+" errores lexicos en linea " +(i+1);
+                    Err=conE+" Errores Lexicos linea " +(i+1);
                 }
                 
                 resultErr+=Err+"\n";
@@ -291,9 +291,27 @@ public class GUICompilador extends javax.swing.JFrame {
             if(conUltimo!=i)
                 cadEntrada+="Del ";
         }
-        //*for para asiganr el tipo a los id
-        for (Object declaracione : declaraciones) {
-            lexico.examinarDeclaracion((String) declaracione);
+        //*for para asiganr el tipo a los id y verificar que no exista doble declaraciones
+        for (int i = 0; i < declaraciones.size(); i++) 
+        {
+            lexico.examinarDeclaracion((String) declaraciones.get(i));
+            
+            String cad=(String) declaraciones.get(i);
+            String [] tok=cad.split(" ");
+            for (int j = 0; j < tok.length; j++) 
+            {
+                String id=lexico.clasificar(tok[j]);
+                if(id.equals("id"))
+                {
+                    if (!identificadores.contains(tok[j])) 
+                        identificadores.add(tok[j]);
+                    else
+                        errSeman+="\nError Semantico Identificador "+tok[j]+" declarado previamente";
+                    
+                }
+                 
+            }
+            
         }
         // for para la creacion de salida semantica
         for (int i = 0; i < cadenas.length; i++) {
@@ -311,7 +329,13 @@ public class GUICompilador extends javax.swing.JFrame {
                     {
                         TDAToken tokenIden = new TDAToken();
                         tokenIden.llave = (String) tokens.get(j);
-                        resulSeman+=lexico.tablaSimbolos.buscar(tokenIden).info.tipo+" ";
+                        if(lexico.tablaSimbolos.buscar(tokenIden).info.tipo!=null)
+                            resulSeman+=lexico.tablaSimbolos.buscar(tokenIden).info.tipo+" ";
+                        else
+                        {
+                            resulSeman+="null"+" ";
+                            errSeman+="\nError Semantico id "+(String) tokens.get(j)+" no declarado en linea "+(i+1);
+                        }
                     }
                     
                 }
@@ -321,10 +345,14 @@ public class GUICompilador extends javax.swing.JFrame {
         // for para marcar lineas necesarias para revision semantica
         cadenasS =resulSeman.split(delimitadores);
         for (int i = 0; i < cadenasS.length; i++) 
-        {
-            if (cadenasS[i].contains("Opa")||cadenasS[i].contains("opari")||cadenasS[i].contains("oprel")) 
-                resulOutS+="@ "+cadenasS[i];
-            else
+        {   //if para revisar si cadena no ontiene identificador no declarado
+            if(!cadenasS[i].contains("null"))
+            {    
+                if (cadenasS[i].contains("Opa")||cadenasS[i].contains("opari")||cadenasS[i].contains("oprel")) 
+                    resulOutS+="@ "+cadenasS[i];
+                else
+                    resulOutS+=cadenasS[i];
+            }else
                 resulOutS+=cadenasS[i];
         resulOutS+="\n";
         }
@@ -336,8 +364,16 @@ public class GUICompilador extends javax.swing.JFrame {
         jTextErrores.setText(resultErr);
         jTextOut.setText(resulOut);
         
-        this.validacionSintactica();    
+        this.validacionSintactica();
+        errfin=jTextErrores.getText();
+        errfin+=errSeman;
+        jTextErrores.setText(errfin);
         jTextoutS.setText(resulOutS);
+        //mensajes de para estado de ompilaion a traves del contenido de la cadena errfin
+        if(errfin.isEmpty())
+            JOptionPane.showMessageDialog(this, "Compilacion Exitosa");
+        else
+            JOptionPane.showMessageDialog(this, "Error al compilar");
     }//GEN-LAST:event_jMenuItemCompilarActionPerformed
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -420,7 +456,7 @@ public class GUICompilador extends javax.swing.JFrame {
              if("$".equals(entrada.lastElement()) && "$".equals(pila.lastElement())) 
              {
                  //Si los ultimos elementos en la pila y la entrada son el simbolo $
-                 JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
+                // JOptionPane.showMessageDialog(this,"Compilacion Exitosa");
                 break;
              }else
              {
@@ -481,7 +517,7 @@ public class GUICompilador extends javax.swing.JFrame {
                      else
                      {   
                          //si no existe un cruce entre el simbolo no terminal de la pila y el terminal de la entrada
-                         JOptionPane.showMessageDialog(this,"Error al compilar");
+                         //JOptionPane.showMessageDialog(this,"Error al compilar");
                          String stErr=jTextErrores.getText();
                          stErr+="\nError sintactico linea "+conDel;
                          jTextErrores.setText(stErr);
