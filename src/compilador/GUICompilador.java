@@ -5,6 +5,7 @@
  */
 package compilador;
 
+import Arbol.Arbol;
 import ListaDinamica.TDAToken;
 import automatas.Lexico;
 import java.util.ArrayList;
@@ -263,12 +264,20 @@ public class GUICompilador extends javax.swing.JFrame {
                 if(!clasificar.equals("COMEN"))
                 {
                     resulOut+=clasificar+" ";
-                    cadEntrada+=clasificar+" ";
+                    
+                    if (clasificar.equals("ERROR")) 
+                    {
+                        cadEntrada+="id ";
+                        conE++;
+                    }
+                    else
+                        cadEntrada+=clasificar+" ";
                 }
-                if (clasificar.equals("ERROR")) 
+                //La siguiente parte se movio dentro de if(!clasificar.equals("COMEN")) para cambiar la palabra ERROR por id y que se pueda hacer el analisis sintactico
+                /*if (clasificar.equals("ERROR")) 
                 {
                     conE++;
-                }
+                }*/
             }
             
             
@@ -356,6 +365,19 @@ public class GUICompilador extends javax.swing.JFrame {
                 resulOutS+=cadenasS[i];
         resulOutS+="\n";
         }
+        jTextoutS.setText(resulOutS);
+        
+        //for para validacion semantica
+        cadenasS = resulOutS.split(delimitadores);
+        String resTipos = "", erroresTipos = "";
+        for (int i=0 ; i<cadenasS.length ; i++) {
+            //revisar cada una de las cadenas marcadas con @
+            if (cadenasS[i].charAt(0) == '@') {
+                resTipos = compatibilidadTipos(cadenasS[i]);
+                if (!resTipos.equals("success"))
+                    erroresTipos += "Error semantico: "+resTipos+" en linea "+(i+1)+"\n";
+            }
+        }
         
         
         lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
@@ -367,8 +389,12 @@ public class GUICompilador extends javax.swing.JFrame {
         this.validacionSintactica();
         errfin=jTextErrores.getText();
         errfin+=errSeman;
+        //agregar salto de linea si no esta vacio
+        if (!errfin.isEmpty())
+            errfin+="\n";
+        errfin+=erroresTipos;
         jTextErrores.setText(errfin);
-        jTextoutS.setText(resulOutS);
+        //jTextoutS.setText(resulOutS);
         //mensajes de para estado de ompilaion a traves del contenido de la cadena errfin
         if(errfin.isEmpty())
             JOptionPane.showMessageDialog(this, "Compilacion Exitosa");
@@ -640,6 +666,306 @@ public class GUICompilador extends javax.swing.JFrame {
              jTextErrores.setText(stErr);
              jTextPila.setText(sPila);
              jTextEntrada.setText(sEntrada);
+    }
+    
+    /*********************************************************************************************************+
+    |                                                                                                         |
+    |                      Metodos utilizados en la validacion semantica                                      |
+    |                                                                                                         |
+    **********************************************************************************************************/
+    
+    /*
+     * Recibe una sentencia que puede ser una asignacion con o sin operaciones aritmeticas,
+     * una condición, un for o un while.
+     * Devuelve success si los tipos son compatibles, de lo contrario devuelve la causa del error
+    */
+    public String compatibilidadTipos(String sentencia) {
+            String resultado = "";
+            //separar las palabras de la cadena en un arreglo
+            String[] arrSentencia;
+            arrSentencia = sentencia.split(" ");
+            System.out.println("compatibilidadTipos segundo elemento de arrSentencia: "+arrSentencia[1]);
+            //la primer palabra es @ la segunda puede ser if, for, while o un id
+            //Determinar que tipo de sentencia es asignacion, if, for, while
+            switch(arrSentencia[1]) {
+                    case "if":
+                            resultado = compatibilidadIf(arrSentencia);
+                            break;
+                    case "for":
+                            resultado = compatibilidadFor(arrSentencia);
+                            break;
+                    case "while":
+                            resultado = compatibilidadWhile(arrSentencia);
+                            break;
+                    default:
+                            //asignacion
+                            resultado = compatibilidadAsignacion(arrSentencia);
+                            break;
+            }
+
+            return resultado;
+
+    }
+    
+    /*
+     * Devuelve success si la comprobacion fue exitosa, de lo contario devuelve la causa del error
+    */
+    public String compatibilidadIf(String[] arrSentencia) {
+        //extraer la expresion entre el if y el operador relacional oprel
+        ArrayList<String> expresion1 = new ArrayList();
+        String actual = "", tipo1, tipo2;
+        int indice = 2;
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Compatibilidad If");
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Elementos agregados a Expresion 1");
+        while(!actual.equals("oprel")) {
+            expresion1.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //extraer la expresion entre oprel y then
+        ArrayList<String> expresion2 = new ArrayList();
+        indice++; //avanzar una palabra despues de oprel
+        actual = arrSentencia[indice];
+        System.out.println("Elementos agregados a Expresion 2");
+        while(!actual.equals("then")) {
+            expresion2.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //obtener los tipos de las expresiones
+        tipo1 = compatibilidadExpresion(expresion1);
+        tipo2 = compatibilidadExpresion(expresion2);
+        
+        //comparar los tipos devueltos
+        if (tipo1.equals("error") || tipo2.equals("error"))
+            return "operacion invalida con variable de tipo cadena";
+        else if (tipo1.equals("cad") || tipo2.equals("cad"))
+            return "no se permiten cadenas en las condiciones";
+        else
+            return "success";
+    }
+    
+    /*
+     * Devuelve success si la comprobacion fue exitosa, de lo contario devuelve la causa del error
+    */
+    public String compatibilidadFor(String[] arrSentencia) {
+        /*
+         * Asignacion
+        */
+        //obtener el tipo del id en la asignacion
+        String tipoAsignacion = arrSentencia[3];
+        if (tipoAsignacion.equals("Dragon"))
+            return "no se permiten cadenas para controlar un ciclo for";
+        
+        //extraer la expresion entre Opa y ;
+        ArrayList<String> expresionAsig = new ArrayList();
+        String actual = "", tipoAsig;
+        int indice = 4;
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Compatibilidad For");
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Elementos agregados a Expresion Asignacion");
+        while(!actual.equals(";")) {
+            expresionAsig.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //obtener el tipo de la expresion de la asignacion
+        tipoAsig = compatibilidadExpresion(expresionAsig);
+        
+        //comparar los tipos devueltos
+        if (tipoAsig.equals("error"))
+            return "operacion invalida con variable de tipo cadena";
+        else if (tipoAsig.equals("cad"))
+            return "no se permiten cadenas para controlar un ciclo for";
+        
+        
+        /*
+         * Condicion
+        */
+        //extraer la expresion condicional entre ; y ;
+        ArrayList<String> expresion1 = new ArrayList();
+        String tipo1, tipo2;
+        indice++; //avanzar una palabra despues de ;
+        System.out.println("Elementos agregados a Expresion 1 de condicion");
+        while(!actual.equals("oprel")) {
+            expresion1.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //extraer la expresion entre oprel y ;
+        ArrayList<String> expresion2 = new ArrayList();
+        indice++; //avanzar una palabra despues de oprel
+        actual = arrSentencia[indice];
+        System.out.println("Elementos agregados a Expresion 2 de condicion");
+        while(!actual.equals(";")) {
+            expresion2.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //obtener los tipos de las expresiones
+        tipo1 = compatibilidadExpresion(expresion1);
+        tipo2 = compatibilidadExpresion(expresion2);
+        
+        //comparar los tipos devueltos
+        if (tipo1.equals("error") || tipo2.equals("error"))
+            return "operacion invalida con variable de tipo cadena";
+        else if (tipo1.equals("cad") || tipo2.equals("cad"))
+            return "no se permiten cadenas en las condiciones";
+        
+        
+        /*
+         * Incremento
+        */
+        //obtener el tipo del id en el incremento
+        indice++; //avanzar el indice una palabra despues de ;
+        String tipoIncremento = arrSentencia[indice];
+        if (tipoIncremento.equals("Dragon"))
+            return "no se permiten cadenas para controlar un ciclo for";
+        
+        //avanzar el indice a la primer palabra de la expresion de incremento
+        indice+=2;
+        
+        //extraer la expresion entre Opa y el final de la cadena
+        ArrayList<String> expresionInc = new ArrayList();
+        String tipoInc;
+        System.out.println("Elementos agregados a Expresion Incremento");
+        while(indice < arrSentencia.length) {
+            expresionInc.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+        }
+        
+        //obtener el tipo de la expresion del incremento
+        tipoInc = compatibilidadExpresion(expresionInc);
+        
+        //comparar los tipos devueltos
+        if (tipoInc.equals("error"))
+            return "operacion invalida con variable de tipo cadena";
+        else if (tipoAsig.equals("cad"))
+            return "no se permiten cadenas para controlar un ciclo for";
+        
+        //si no hubo error hasta esta parte devolver success
+        return "success";
+    }
+    
+    /*
+     * Devuelve success si la comprobacion fue exitosa, de lo contario devuelve la causa del error
+    */
+    public String compatibilidadWhile(String[] arrSentencia) {
+        //extraer la expresion entre el while y el operador relacional oprel
+        ArrayList<String> expresion1 = new ArrayList();
+        String actual = "", tipo1, tipo2;
+        int indice = 2;
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Compatibilidad While");
+        System.out.println("++++++++++++++++++++++++++++");
+        System.out.println("Elementos agregados a Expresion 1");
+        while(!actual.equals("oprel")) {
+            expresion1.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+            actual = arrSentencia[indice];
+        }
+        
+        //extraer la expresion entre oprel y el final de la cadena
+        ArrayList<String> expresion2 = new ArrayList();
+        indice++; //avanzar una palabra despues de oprel
+        System.out.println("Elementos agregados a Expresion 2");
+        while(indice < arrSentencia.length) {
+            expresion2.add(arrSentencia[indice]);
+            System.out.println(arrSentencia[indice]);
+            indice++;
+        }
+        
+        //obtener los tipos de las expresiones
+        tipo1 = compatibilidadExpresion(expresion1);
+        tipo2 = compatibilidadExpresion(expresion2);
+        
+        //comparar los tipos devueltos
+        if (tipo1.equals("error") || tipo2.equals("error"))
+            return "operacion invalida con variable de tipo cadena";
+        else if (tipo1.equals("cad") || tipo2.equals("cad"))
+            return "no se permiten cadenas en las condiciones";
+        else
+            return "success";
+    }
+
+    /*
+     * Devuelve success si la comprobacion fue exitosa, de lo contario devuelve la causa del error
+    */
+    public String compatibilidadAsignacion(String[] arrSentencia) {
+            //guardar el tipo del id al que se le hace la asignacion
+            String tipo = arrSentencia[1];
+            //si el tipo es una cadena revisar que se le asigne una cadena
+            if (tipo.equals("Dragon")) {
+                    //El tipo de lo que se asigna debe ser una sola cadena
+                    if (arrSentencia[3].equals("cad") || arrSentencia[3].equals("Dragon"))
+                            return "success";
+                    else
+                            return "Se trata de asignar un valor que no es cadena";
+            }
+            else {
+                    //si no es cadena entonces es una expresion (expresion engloba un solo numero o identificador)
+                    //Separar la parte de la sentencia que es la expresion
+                    ArrayList arrExpresion = new ArrayList();
+                    for (int i=3 ; i<arrSentencia.length ; i++) {
+                            arrExpresion.add(arrSentencia[i]);
+                    }
+                    //llamar a la funcion que revisa la compatibilidad en una expresion
+                    String resultadoExpresion = compatibilidadExpresion(arrExpresion);
+                    switch(resultadoExpresion) {
+                            case "error":
+                                    return "operacion invalida con variable de tipo cadena";
+                                    //break;
+                            case "cad":
+                                    if (tipo.equals("Dragon"))
+                                            return "success";
+                                    else
+                                            return "Se trata de asignar una cadena a una variable que no lo es";
+                                    //break;
+                            case "real":
+                                    if (tipo.equals("Groat") || tipo.equals("HalfGroat"))
+                                            return "success";
+                                    else
+                                            return "Se trata de asignar un numero real a una variable que no lo es";
+                                    //break;
+                            case "entero":
+                                    if (tipo.equals("Moon"))
+                                            return "success";
+                                    else
+                                            return "Se trata de asignar un numero entero a una variable que no lo es";
+                                    //break;
+                            default:
+                                    return "Error al comprobar el tipo de una asignacion";
+                                    //break;
+                    }
+            }
+    }
+
+    /*
+     * Devuelve el tipo final de la expresion, de lo contrario devuelve la cadena error
+    */
+    public String compatibilidadExpresion(ArrayList<String> arrExpresion) {
+            //instanciar el arbol
+            Arbol arbolExpresion = new Arbol();
+            //insertar la expresion en el arbol
+            arbolExpresion.insertar(arrExpresion);
+            //determinar el tipo final de la expresion
+            String resultado = arbolExpresion.determinarTipo();
+            return resultado;
     }
     
     

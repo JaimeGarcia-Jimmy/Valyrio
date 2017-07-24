@@ -49,6 +49,8 @@ public class Lexico {
         palabrasReservadas.add("else");
         palabrasReservadas.add("endelse");
         palabrasReservadas.add(",");
+        palabrasReservadas.add("while");
+        palabrasReservadas.add("endwhile");
         
         //ingresar los operadores relacionales
         operadoresRelacionales.add(">");

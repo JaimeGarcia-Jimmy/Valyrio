@@ -293,6 +293,8 @@ public class Utils {
             T19.put("opari","ExpresionR");
             T20.put("Del","e");
             T20.put("opari","opari Expresion ExpresionR");
+            T20.put("oprel","e");
+            T20.put("then","e");
             /*
             T.put("Ice","");
             T.put("Fire","");
