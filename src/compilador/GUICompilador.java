@@ -21,6 +21,7 @@ import javax.swing.table.DefaultTableModel;
 public class GUICompilador extends javax.swing.JFrame {
     Utils utils =new Utils();
     String cadEntrada="";
+    int errorSin=0;
     //Lista_desordenada lista = new Lista_desordenada();
     DefaultTableModel tabla = new DefaultTableModel();
    // Lexico lexico;
@@ -353,9 +354,12 @@ public class GUICompilador extends javax.swing.JFrame {
         }
         // for para marcar lineas necesarias para revision semantica
         cadenasS =resulSeman.split(delimitadores);
+        jTextErrores.setText(resultErr);
+        this.validacionSintactica();
+        System.out.println("error"+errorSin);
         for (int i = 0; i < cadenasS.length; i++) 
         {   //if para revisar si cadena no ontiene identificador no declarado
-            if(!cadenasS[i].contains("null"))
+            if(!cadenasS[i].contains("null")&&i!=(errorSin-1))
             {    
                 if (cadenasS[i].contains("Opa")||cadenasS[i].contains("opari")||cadenasS[i].contains("oprel")) 
                     resulOutS+="@ "+cadenasS[i];
@@ -367,7 +371,20 @@ public class GUICompilador extends javax.swing.JFrame {
         }
         jTextoutS.setText(resulOutS);
         
-        //for para validacion semantica
+      
+        
+        lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
+        lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
+         
+        
+        jTextOut.setText(resulOut);
+        
+        
+        errfin=jTextErrores.getText();
+        errfin+=errSeman;
+        //agregar salto de linea si no esta vacio
+        
+          //for para validacion semantica
         cadenasS = resulOutS.split(delimitadores);
         String resTipos = "", erroresTipos = "";
         for (int i=0 ; i<cadenasS.length ; i++) {
@@ -380,22 +397,14 @@ public class GUICompilador extends javax.swing.JFrame {
         }
         
         
-        lexico.tablaSimbolos.limpiarTabla(tabla); /* limpia contenido previo de defaulftable model */
-        lexico.tablaSimbolos.llenarTabla(tabla);/* asigan los valores de la lista al modelo que se asigna al jtable*/
-         
-        jTextErrores.setText(resultErr);
-        jTextOut.setText(resulOut);
         
-        this.validacionSintactica();
-        errfin=jTextErrores.getText();
-        errfin+=errSeman;
-        //agregar salto de linea si no esta vacio
         if (!errfin.isEmpty())
             errfin+="\n";
         errfin+=erroresTipos;
         jTextErrores.setText(errfin);
         //jTextoutS.setText(resulOutS);
         //mensajes de para estado de ompilaion a traves del contenido de la cadena errfin
+        
         if(errfin.isEmpty())
             JOptionPane.showMessageDialog(this, "Compilacion Exitosa");
         else
@@ -546,6 +555,7 @@ public class GUICompilador extends javax.swing.JFrame {
                          //JOptionPane.showMessageDialog(this,"Error al compilar");
                          String stErr=jTextErrores.getText();
                          stErr+="\nError sintactico linea "+conDel;
+                         errorSin=conDel;
                          jTextErrores.setText(stErr);
 
                          break;
@@ -854,7 +864,7 @@ public class GUICompilador extends javax.swing.JFrame {
         //comparar los tipos devueltos
         if (tipoInc.equals("error"))
             return "operacion invalida con variable de tipo cadena";
-        else if (tipoAsig.equals("cad"))
+        else if (tipoInc.equals("cad"))
             return "no se permiten cadenas para controlar un ciclo for";
         
         //si no hubo error hasta esta parte devolver success
